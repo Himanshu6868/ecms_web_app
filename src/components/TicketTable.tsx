@@ -13,6 +13,7 @@ interface TicketTableProps {
 
 export default function TicketTable({ tickets, showDescription = false }: TicketTableProps) {
   const [pendingStatus, setPendingStatus] = useState<Record<string, TicketStatus>>({});
+  const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const { notify } = useToast();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
 
@@ -70,7 +71,12 @@ export default function TicketTable({ tickets, showDescription = false }: Ticket
               <td className="px-4 py-3 text-slate-300">{ticket.createdAtLabel}</td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-2">
-                  <button className="rounded-md border border-slate-700 px-3 py-1 text-xs hover:border-slate-500">View</button>
+                  <button
+                    onClick={() => setSelectedTicket(ticket)}
+                    className="rounded-md border border-slate-700 px-3 py-1 text-xs hover:border-slate-500"
+                  >
+                    View
+                  </button>
                   <select
                     aria-label={`Update status for ${ticket.id}`}
                     value={pendingStatus[ticket.id] ?? ticket.status}
@@ -105,6 +111,54 @@ export default function TicketTable({ tickets, showDescription = false }: Ticket
           )}
         </tbody>
       </table>
+
+      {selectedTicket && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4">
+          <div className="w-full max-w-2xl rounded-xl border border-slate-700 bg-panel p-5 shadow-2xl">
+            <div className="mb-4 flex items-start justify-between gap-4 border-b border-slate-800 pb-3">
+              <div>
+                <p className="text-xs text-muted">Ticket Details</p>
+                <h3 className="text-lg font-semibold text-white">{selectedTicket.title}</h3>
+              </div>
+              <button
+                onClick={() => setSelectedTicket(null)}
+                className="rounded-md border border-slate-700 px-2 py-1 text-xs hover:border-slate-500"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="space-y-3 text-sm">
+              <p>
+                <span className="text-muted">Ticket ID:</span>{" "}
+                <span className="font-mono text-slate-300">{selectedTicket.id}</span>
+              </p>
+              <p>
+                <span className="text-muted">Status:</span> <StatusBadge status={selectedTicket.status} />
+              </p>
+              <p>
+                <span className="text-muted">Priority:</span> {selectedTicket.priority}
+              </p>
+              <p>
+                <span className="text-muted">Category:</span> {selectedTicket.category}
+              </p>
+              <p>
+                <span className="text-muted">Location:</span> {selectedTicket.location ?? "Not provided"}
+              </p>
+              <p>
+                <span className="text-muted">Created At:</span>{" "}
+                {selectedTicket.createdAt ? selectedTicket.createdAt.toDate().toLocaleString() : "Pending"}
+              </p>
+              <div>
+                <p className="mb-1 text-muted">Description:</p>
+                <p className="rounded-md border border-slate-800 bg-slate-900/40 p-3 text-slate-200">
+                  {selectedTicket.description}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
